@@ -4,10 +4,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { HelloComponent } from './hello.component';
+import { InstagramValidatorServiceService } from '../instagram/instagram-validator-service.service';
 
 @NgModule({
-  imports: [BrowserModule, FormsModule, ReactiveFormsModule],
-  declarations: [AppComponent, HelloComponent],
+  imports: [BrowserModule, FormsModule, ReactiveFormsModule,],
+  declarations: [AppComponent, HelloComponent,],
   bootstrap: [AppComponent],
+  providers: [
+    InstagramValidatorServiceService
+  ],
 })
 export class AppModule {}
