@@ -1,4 +1,4 @@
-<input type="file" (change)="change($event)" />
+<input type="file" accept="image/*,video/*" (change)="change($event)" />
 <!-- <div *ngIf="video.invalid && (video.dirty || video.touched)">
   <div *ngIf="video.errors.minWidth">
     Video width must be at least 720 pixels.
@@ -27,3 +27,14 @@
     Image size should be no larger than 30 MB.
   </div>
 </div> -->
+<div class="row" *ngFor="let data of validationErrorHandler">
+  <div *ngIf="!data.FormatValid">{{ data.name }} Invalid Format</div>
+
+  <div *ngIf="!data.ImageDimensionsValid">
+    {{ data.name }} Invalid Dimensions
+  </div>
+
+  <div *ngIf="!data.ValidAspectRatio">{{ data.name }} Invalid Aspect Ratio</div>
+
+  <div *ngIf="!data.ValidDuration">{{ data.name }} Invalid Duration</div>
+</div>

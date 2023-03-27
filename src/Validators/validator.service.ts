@@ -1,57 +1,20 @@
 import { Injectable } from '@angular/core';
 
 @Injectable()
-export class InstagramValidatorServiceService {
-  InstagramValidators = {
-    allowedFormats: {
-      video: ['video/mp4', 'video/mov', 'image/gif'],
-      image: ['image/jpeg', 'image/png', 'image/bmp', 'image/gif'],
-    },
-    Resolution: {
-      video: {
-        minimum: {
-          width: 640,
-          height: 640,
-        },
-        maximum: {
-          width: 1080,
-          height: 1920,
-        },
-      },
-      image: {
-        minimum: {
-          width: 1080,
-          height: 566,
-        },
-        maximum: {
-          width: 2048,
-          height: 2048,
-        },
-      },
-    },
-    videLength: {
-      minimum: 3,
-      maximum: 60,
-    },
-    captionLength: 2200,
-    hashtagsLength: 30,
-    videoAspectRatio: '1.91:1 and  9:16',
-    imageAspectRatio: '1.91:1 and 4:5',
-    maxVideoSize: 4294967296,
-    maxImageSize: 31457280,
-  };
+export class ValidatorService {
+  Validators: any = {};
   constructor() {}
   async allowedFormat(param: File) {
     const file: File = param;
     if (file) {
       if (
         file.type.startsWith('image') &&
-        this.InstagramValidators.allowedFormats.image.indexOf(file.type) !== -1
+        this.Validators.allowedFormats.image.indexOf(file.type) !== -1
       ) {
         return await { FormatValid: true };
       } else if (
         file.type.startsWith('video') &&
-        this.InstagramValidators.allowedFormats.video.indexOf(file.type) !== -1
+        this.Validators.allowedFormats.video.indexOf(file.type) !== -1
       ) {
         return await { FormatValid: true };
       } else {
@@ -73,8 +36,9 @@ export class InstagramValidatorServiceService {
         });
         imageElement.src = URL.createObjectURL(file);
         const dimensions: any = await imageLoaded;
-        const maxresoltion = this.InstagramValidators.Resolution.image.maximum;
-        const minresoltion = this.InstagramValidators.Resolution.image.minimum;
+        const maxresoltion = this.Validators.Resolution.image.maximum;
+        const minresoltion = this.Validators.Resolution.image.minimum;
+        // console.log(dimensions);
         if (
           dimensions.width >= minresoltion.width &&
           dimensions.width <= maxresoltion.width &&
@@ -98,9 +62,9 @@ export class InstagramValidatorServiceService {
         });
         videoElement.src = URL.createObjectURL(file);
         const dimensions: any = await videoLoaded;
-        console.log(dimensions);
-        const maxresoltion = this.InstagramValidators.Resolution.video.maximum;
-        const minresoltion = this.InstagramValidators.Resolution.video.minimum;
+        // console.log(dimensions);
+        const maxresoltion = this.Validators.Resolution.video.maximum;
+        const minresoltion = this.Validators.Resolution.video.minimum;
         if (
           dimensions.width >= minresoltion.width &&
           dimensions.width <= maxresoltion.width &&
@@ -128,8 +92,8 @@ export class InstagramValidatorServiceService {
       });
       const duration = videoElement.duration;
       if (
-        duration >= this.InstagramValidators.videLength.minimum &&
-        duration <= this.InstagramValidators.videLength.maximum
+        duration >= this.Validators.videLength.minimum &&
+        duration <= this.Validators.videLength.maximum
       ) {
         return await { ValidDuration: true };
       } else {
@@ -141,11 +105,10 @@ export class InstagramValidatorServiceService {
   }
 
   async aspectRatioValidator(param: File) {
-    debugger;
     const file: File = param;
 
     if (file.type.startsWith('image')) {
-      if (file.size > this.InstagramValidators.maxImageSize) {
+      if (file.size > this.Validators.maxImageSize) {
         return await { maxSizeExceeded: true };
       }
       const imageElement = document.createElement('img');
@@ -158,16 +121,21 @@ export class InstagramValidatorServiceService {
       const height = imageElement.height;
       const aspectRatio = width / height;
 
+      const imageAspectRatio =
+        this.Validators.imageAspectRatio.split(/:| and |\//);
+
       if (
-        (aspectRatio >= 1.91 || aspectRatio >= 1) &&
-        (aspectRatio <= 4 || aspectRatio <= 5)
+        (aspectRatio >= Number(imageAspectRatio[0]) ||
+          aspectRatio >= Number(imageAspectRatio[1])) &&
+        (aspectRatio <= Number(imageAspectRatio[2]) ||
+          aspectRatio <= Number(imageAspectRatio[3]))
       ) {
         return await { ValidAspectRatio: true };
       } else {
         return await { ValidAspectRatio: false };
       }
     } else if (file.type.startsWith('video')) {
-      if (file.size > this.InstagramValidators.maxVideoSize) {
+      if (file.size > this.Validators.maxVideoSize) {
         return await { maxSizeExceeded: true };
       }
       const videoElement = document.createElement('video');
@@ -180,9 +148,13 @@ export class InstagramValidatorServiceService {
       const height = videoElement.videoHeight;
 
       const aspectRatio = width / height;
+      const videoAspectRatio =
+        this.Validators.imageAspectRatio.split(/:| and |\//);
       if (
-        (aspectRatio >= 1.91 || aspectRatio >= 1) &&
-        (aspectRatio <= 9 || aspectRatio <= 16)
+        (aspectRatio >= Number(videoAspectRatio[0]) ||
+          aspectRatio >= Number(videoAspectRatio[1])) &&
+        (aspectRatio <= Number(videoAspectRatio[2]) ||
+          aspectRatio <= Number(videoAspectRatio[3]))
       ) {
         return await { ValidAspectRatio: true };
       } else {

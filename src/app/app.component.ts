@@ -6,7 +6,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { InstagramValidatorServiceService } from '../instagram/instagram-validator-service.service';
+import { ValidatorService } from '../Validators/validator.service';
 
 @Component({
   selector: 'my-app',
@@ -14,35 +14,236 @@ import { InstagramValidatorServiceService } from '../instagram/instagram-validat
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  constructor(private Instagramvalidator: InstagramValidatorServiceService) {}
+  constructor(private validatorService: ValidatorService) {}
+  validationErrorHandler: any = [];
+  InstagramValidators = {
+    allowedFormats: {
+      video: ['video/mp4', 'video/mov', 'image/gif'],
+      image: ['image/jpeg', 'image/png', 'image/bmp', 'image/gif'],
+    },
+    Resolution: {
+      video: {
+        minimum: {
+          width: 640,
+          height: 640,
+        },
+        maximum: {
+          width: 1080,
+          height: 1920,
+        },
+      },
+      image: {
+        minimum: {
+          width: 320,
+          height: 320,
+        },
+        maximum: {
+          width: 2048,
+          height: 2048,
+        },
+      },
+    },
+    videLength: {
+      minimum: 3,
+      maximum: 60,
+    },
+    captionLength: 2200,
+    hashtagsLength: 30,
+    videoAspectRatio: '1.91:1 and  9:16',
+    imageAspectRatio: '1.91:1 and 4:5',
+    maxVideoSize: 4294967296,
+    maxImageSize: 31457280,
+    frameRate: {
+      minimum: 30,
+      maximum: 60,
+    },
+  };
+  FacebookValidators = {
+    allowedFormats: {
+      video: ['video/mp4', 'video/mov', 'video/avi', 'video/wmw'],
+      image: ['image/jpeg', 'image/png', 'image/gif'],
+    },
+    Resolution: {
+      video: {
+        minimum: {
+          width: 600,
+          height: 315,
+        },
+        maximum: {
+          width: 2048,
+          height: 2048,
+        },
+      },
+      image: {
+        minimum: {
+          width: 200,
+          height: 200,
+        },
+        maximum: {
+          width: 2048,
+          height: 2048,
+        },
+      },
+    },
+    videLength: {
+      minimum: 1,
+      maximum: 120,
+    },
+    captionLength: 5000,
+    hashtagsLength: 30,
+    videoAspectRatio: '1.91:1 and  9:16',
+    imageAspectRatio: '1.91:1 and 4:5',
+    maxVideoSize: 4294967296,
+    maxImageSize: 26214400,
+    frameRate: {
+      minimum: 30,
+      maximum: 60,
+    },
+  };
 
+  LinkedInValidators = {
+    allowedFormats: {
+      video: ['video/mp4'],
+      image: ['image/jpeg', 'image/png'],
+    },
+    Resolution: {
+      video: {
+        minimum: {
+          width: 256,
+          height: 144,
+        },
+        recommended: {
+          width: 1280,
+          height: 720,
+        },
+        maximum: {
+          width: 4096,
+          height: 2304,
+        },
+      },
+      image: {
+        minimum: {
+          width: 400,
+          height: 400,
+        },
+        recommended: {
+          width: 1200,
+          height: 627,
+        },
+        maximum: {
+          width: 8192,
+          height: 8192,
+        },
+      },
+    },
+    videoLength: {
+      minimum: 1,
+      maximum: 10 * 60, // 10 minutes
+    },
+    captionLength: 2200, // LinkedIn allows up to 2,200 characters for captions
+    hashtagsLength: 30,
+    videoAspectRatio: '1:2.4 and  2.4:1',
+    imageAspectRatio: '1.91:1 and 4:5',
+    maxVideoSize: 5368709120,
+    maxImageSize: 15728640,
+    frameRate: {
+      minimum: 30,
+      recommended: 60,
+      maximum: 60,
+    },
+  };
+  PinterestValidators = {
+    allowedFormats: {
+      video: ['video/mp4', 'video/mov', 'video/3gpp', 'video/quicktime'],
+      image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    },
+    Resolution: {
+      video: {
+        minimum: {
+          width: 240,
+          height: 240,
+        },
+        maximum: {
+          width: 1920,
+          height: 1080,
+        },
+      },
+      image: {
+        minimum: {
+          width: 1080,
+          height: 2100,
+        },
+        maximum: {
+          width: 1920,
+          height: 2100,
+        },
+      },
+    },
+    videoLength: {
+      minimum: 4,
+      maximum: 60,
+    },
+    captionLength: 500,
+    hashtagsLength: 20,
+    videoAspectRatio: '1:1,  9:16',
+    imageAspectRatio: '1:1, 4:5',
+    // videoAspectRatio: '1:2.4 and  2.4:1',
+    // imageAspectRatio: '1.91:1 and 4:5',
+    maxVideoSize: 2147483648,
+    maxImageSize: 33554432,
+    frameRate: {
+      minimum: 24,
+      maximum: 60,
+    },
+  };
   ngOnInit(): void {}
 
   async change(event) {
-    //debugger;
+    this.validationErrorHandler = [];
     const file: File = event.target.files[0];
-    // console.log(file);
-
     if (file) {
-      var allowedFormat = await this.Instagramvalidator.allowedFormat(file);
-      var dimensionData = await this.Instagramvalidator.validateDimensions(
-        file
+      this.validatorService.Validators = this.InstagramValidators;
+      const instagramValidateStatus = Object.assign(
+        { name: 'Instagram' },
+        await this.validatorService.allowedFormat(file),
+        await this.validatorService.validateDimensions(file),
+        await this.validatorService.aspectRatioValidator(file),
+        await this.validatorService.DurationValidate(file)
       );
-      var aspectRatio = await this.Instagramvalidator.aspectRatioValidator(
-        file
+      this.validatorService.Validators = this.FacebookValidators;
+      const facebookValidateStatus = Object.assign(
+        { name: 'Facebook' },
+        await this.validatorService.allowedFormat(file),
+        await this.validatorService.validateDimensions(file),
+        await this.validatorService.aspectRatioValidator(file),
+        await this.validatorService.DurationValidate(file)
       );
-      var duration = await this.Instagramvalidator.DurationValidate(file);
+      this.validatorService.Validators = this.LinkedInValidators;
+      const LinkedInValidateStatus = Object.assign(
+        { name: 'LinkedIn' },
+        await this.validatorService.allowedFormat(file),
+        await this.validatorService.validateDimensions(file),
+        await this.validatorService.aspectRatioValidator(file),
+        await this.validatorService.DurationValidate(file)
+      );
+      this.validatorService.Validators = this.PinterestValidators;
+      const PintrestValidateStatus = Object.assign(
+        { name: 'Pintrest' },
+        await this.validatorService.allowedFormat(file),
+        await this.validatorService.validateDimensions(file),
+        await this.validatorService.aspectRatioValidator(file),
+        await this.validatorService.DurationValidate(file)
+      );
+      this.validationErrorHandler.push(
+        instagramValidateStatus,
+        facebookValidateStatus,
+        LinkedInValidateStatus,
+        PintrestValidateStatus
+      );
 
-      const combinedObject = Object.assign(
-        {},
-        allowedFormat,
-        dimensionData,
-        aspectRatio,
-        duration,
-        {}
-      );
-
-      console.log(combinedObject);
+      console.log(this.validationErrorHandler);
+      // console.log('Instagram:', instagramValidateStatus);
+      // console.log('Facebook:', facebookValidateStatus);
     }
   }
 
